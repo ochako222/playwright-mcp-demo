@@ -2,7 +2,10 @@
 	"mcpServers": {
 		"playwright-test": {
 			"command": "npx",
-			"args": ["playwright", "run-test-mcp-server"]
+			"args": ["playwright", "run-test-mcp-server"],
+			"env": {
+				"MAX_RESPONSE_SIZE": "10000"
+			}
 		},
 		"context7": {
 			"command": "npx",
