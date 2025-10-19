@@ -5,6 +5,10 @@ export class WikiPage extends AppPage {
 		name: "Search Wikipedia",
 	});
 
+	private readonly searchButton = this.page.getByRole("button", {
+		name: "Search",
+	});
+
 	async expectLoaded() {
 		console.log(
 			"[PLAYWRIGHT-TEST]>>>> Expecting Translation Page to be loaded",
@@ -23,7 +27,17 @@ export class WikiPage extends AppPage {
 		await this.page.waitForLoadState("networkidle");
 	}
 
+	async searchWithButton(query: string) {
+		await this.searchBox.fill(query);
+		await this.searchButton.click();
+		await this.page.waitForLoadState("networkidle");
+	}
+
 	getSearchBox() {
 		return this.searchBox;
+	}
+
+	getSearchButton() {
+		return this.searchButton;
 	}
 }
