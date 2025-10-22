@@ -5,13 +5,15 @@ See @README for project overview and @package.json for available npm commands fo
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Development Commands
-- Always use Context7 MCP when writing code to fetch relevant documentation
-- Don't run tests to verify changes. Run tests only when you're asked or when corresponding agent needs to run tests.
-
 ## Project Overview
 
 This is a TypeScript-based Playwright testing project integrated with Playwright MCP server (`@playwright/mcp`), which enables browser automation via LLMs. The project uses Biome for linting/formatting instead of ESLint/Prettier.
+
+## Development Workflow
+
+- **Always use Context7 MCP** when writing code to fetch relevant documentation for libraries (Playwright, TypeScript, etc.)
+- **Don't run tests automatically** to verify changes. Run tests only when explicitly asked or when a specific agent needs to run them
+- **Run formatting before commits**: Use `npm run check -- --write` to fix formatting issues
 
 ## Essential Commands
 
@@ -24,19 +26,29 @@ npm run check            # Run Biome linter and formatter
 
 ### Testing
 ```bash
-npm test                           # Run all Playwright tests
-npm run test:ui                    # Run tests with Playwright UI mode
-npm run test:headed                # Run tests in headed (visible) browser mode
-npm run tests:single               # Run smoke tests in headless mode
-npx playwright test <file>         # Run a single test file
-npx playwright test <file> --headed  # Run single test in headed mode
+npm test                                    # Run all Playwright tests
+npm run test:ui                             # Run tests with Playwright UI mode
+npm run test:headed                         # Run tests in headed (visible) browser mode
+npm run tests:single                        # Run smoke tests in headless mode (@smoke tag)
+npx playwright test <file>                  # Run a single test file
+npx playwright test <file> --headed         # Run single test in headed mode
+npx playwright test --grep "@smoke"         # Run tests with @smoke tag
+HEADLESS=true npm test                      # Force headless mode via environment variable
 ```
+
+**Test Reporting:**
+- HTML report generated after test run: `npx playwright show-report`
+- Screenshots saved on failure in `test-results/`
+- Videos recorded on first retry only
 
 ## Code Style and Configuration
 
 ### Coding Standards
 - **Always use descriptive variable names** - Avoid single-letter variables, abbreviations, or unclear names
 - Use meaningful names that convey purpose and intent
+- **Add explicit return type annotations** to all methods (don't rely solely on inference)
+- **Never use `waitForTimeout()`** - use conditional waits like `waitForSelector()`, `waitForLoadState()`, or `expect().toBeVisible()`
+- **Prefer role-based selectors** over CSS selectors: `page.getByRole('button', { name: 'Search' })` instead of `page.locator('.search-btn')`
 - Examples:
   - ✅ Good: `searchButton`, `userEmail`, `isPageLoaded`
   - ❌ Bad: `btn`, `e`, `x`, `flag`, `data`
