@@ -175,7 +175,49 @@ demoTest.describe(
 ### MCP Integration
 
 The `.mcp.json` configures two MCP servers:
-- **playwright-test**: Enables Playwright MCP server for LLM-driven browser automation
-  - Environment: `MAX_RESPONSE_SIZE=10000`
-- **context7**: Provides access to library documentation via `@upstash/context7-mcp`
-- Always use Context7 MCP when writing code to fetch relevant documentation
+
+1. **playwright-test** - LLM-driven browser automation
+   - Command: `npx playwright run-test-mcp-server`
+   - Environment: `MAX_RESPONSE_SIZE=10000`
+   - Enables browser automation via Claude Code agents
+   - Used by playwright-test-generator, playwright-test-planner, playwright-test-healer agents
+
+2. **context7** - Library documentation access
+   - Command: `npx -y @upstash/context7-mcp@latest`
+   - Provides up-to-date documentation for libraries (Playwright, TypeScript, etc.)
+   - **Always invoke Context7** when writing code to fetch relevant API documentation
+
+**MCP Usage:**
+- Available agents: `planner`, `generator`, `healer` for Playwright test automation
+- Context7 provides real-time documentation beyond Claude's knowledge cutoff
+- See `.claude/agents/` for custom agent configurations
+
+## Common Pitfalls & Reminders
+
+### Import Statements
+- **MUST use `.js` extension** for local imports: `import { demoTest } from "src/fixtures/index.js"`
+- This is required due to `verbatimModuleSyntax: true` in tsconfig.json
+- TypeScript will error if you use `.ts` extensions
+
+### Wait Strategies
+- ❌ Avoid: `page.waitForTimeout(5000)` - hard waits are flaky
+- ✅ Use: `expect(locator).toBeVisible()` - waits with auto-retry
+- ✅ Use: `page.waitForLoadState('networkidle')` - for navigation
+- ✅ Use: `locator.waitFor()` - for specific elements
+
+### Locator Strategies (Priority Order)
+1. **Role-based** (best): `page.getByRole('button', { name: 'Search' })`
+2. **Label**: `page.getByLabel('Email')`
+3. **Placeholder**: `page.getByPlaceholder('Enter email')`
+4. **Text**: `page.getByText('Click me')`
+5. **CSS** (last resort): `page.locator('.btn-primary')`
+
+### Page Object Expectations
+- Every page object **must implement** `expectLoaded()` with actual assertions
+- Empty `expectLoaded()` defeats the purpose of the pattern
+- Use `await expect(this.locator).toBeVisible()` to verify page state
+
+### Test Organization
+- Use tags for filtering: `@smoke`, `@regression`, `@api`, etc.
+- Tag format: `tag: ["@smoke"]` or `tag: "@smoke"` (string or array)
+- Run tagged tests: `npx playwright test --grep "@smoke"`
