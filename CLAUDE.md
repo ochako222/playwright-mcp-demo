@@ -89,31 +89,88 @@ HEADLESS=true npm test                      # Force headless mode via environmen
 
 ### Page Object Model Pattern
 
-The project uses a layered Page Object Model:
+The project uses a **layered Page Object Model** architecture:
 
 1. **Base abstractions** (`src/pages/abstractClasses.ts`):
-   - `PageHolder` - Base class holding `page` and `context`
-   - `Component` - Abstract class with `expectLoaded()` and `isLoaded()` methods
-   - `AppPage` - Extends `Component` with `goto()` and `wait()` methods
+   - `PageHolder` - Base class holding `page: Page` and `context: BrowserContext`
+   - `Component` - Abstract class requiring `expectLoaded()` implementation
+     - `isLoaded()` calls `expectLoaded()` and returns boolean (catches errors)
+   - `AppPage` - Extends `Component`, adds navigation methods
+     - `goto(url: string)` - Navigate to URL
+     - `wait(timeout: number)` - **Deprecated, avoid using**
 
-2. **Page classes** - Extend `AppPage` and implement page-specific logic
+2. **Page classes** (`src/pages/*.page.ts`):
+   - Extend `AppPage`
+   - Define private readonly locators in constructor
+   - Implement `expectLoaded()` with visibility assertions
+   - Provide action methods (e.g., `search()`, `click()`)
+   - Use getter methods for locator access
 
-3. **AppPages aggregator** (`src/pages/index.ts`) - Provides unified access to all page objects
+3. **AppPages aggregator** (`src/pages/index.ts`):
+   - Extends `PageHolder`
+   - Instantiates all page objects: `homePage`, `wikiPage`
+   - Provides centralized access: `pages.wikiPage.search()`
 
 4. **Custom fixture** (`src/fixtures/index.ts`):
-   - Exports `demoTest` which extends base Playwright test
-   - Provides `pages` fixture of type `AppPages`
-   - Tests should import `demoTest` and `expect` from this file
+   - Exports `demoTest` - extended Playwright test with `pages` fixture
+   - Exports `expect` for assertions
+   - Usage: `import { demoTest, expect } from "src/fixtures/index.js"`
+
+**Creating a new page object:**
+```typescript
+import { AppPage } from "src/pages/abstractClasses.js";
+import type { Locator } from "@playwright/test";
+
+export class ExamplePage extends AppPage {
+	private readonly heading: Locator = this.page.getByRole("heading", { level: 1 });
+
+	async expectLoaded(): Promise<void> {
+		await expect(this.heading).toBeVisible();
+	}
+
+	async performAction(): Promise<void> {
+		// Implementation
+	}
+}
+```
 
 ### Testing Patterns
 
-Tests follow these patterns:
-- Import `demoTest` and `expect` from `src/fixtures/index.js` (note: `.js` extension required)
-- Use `demoTest.describe()` for test grouping
-- Access page objects via `pages` fixture: `async ({ pages }) => { await pages.homePage.goto(...) }`
-- For simple tests, use the `page` fixture directly: `async ({ page }) => { await page.goto(...) }`
-- Use `page.getByRole()` for accessible element selection
-- Make assertions with `expect()` from the fixtures
+**Test structure:**
+```typescript
+import { demoTest, expect } from "src/fixtures/index.js"; // .js extension required!
+
+demoTest.describe(
+	"Feature Name",
+	{
+		annotation: { type: "task", description: "Feature description" },
+	},
+	() => {
+		demoTest(
+			"test case description",
+			{
+				tag: ["@smoke", "@regression"], // Tags for filtering
+			},
+			async ({ pages, page }) => {
+				// Use pages fixture for POM access
+				await pages.wikiPage.navigate();
+				await pages.wikiPage.search("Query");
+
+				// Use page fixture for assertions
+				await expect(page).toHaveTitle(/Expected/);
+				await expect(page).toHaveURL(/expected-url/);
+			},
+		);
+	},
+);
+```
+
+**Key patterns:**
+- Import from `src/fixtures/index.js` (`.js` extension required due to `verbatimModuleSyntax`)
+- Use `pages` fixture for Page Object Model access
+- Use `page` fixture for direct Playwright API and assertions
+- Tag tests with `@smoke`, `@regression`, etc. for selective execution
+- Use `demoTest.describe()` for grouping with annotations
 
 ### MCP Integration
 
