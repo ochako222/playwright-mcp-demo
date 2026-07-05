@@ -7,8 +7,12 @@ export class HomePage extends AppPage {
 	private heroHeading = this.page.getByRole("heading", {
 		name: "Engineering Precision",
 	});
-	private navProdigyLink = this.page.getByRole("link", { name: "PRODIGY" }).first();
-	private cookieAcceptButton = this.page.getByRole("button", { name: "Accept All" });
+	private navProdigyLink = this.page
+		.getByRole("link", { name: "PRODIGY" })
+		.first();
+	private cookieAcceptButton = this.page.getByRole("button", {
+		name: "Accept All",
+	});
 
 	public demoComponent = new DemoComponent(this.page, this.context);
 
@@ -24,6 +28,9 @@ export class HomePage extends AppPage {
 
 	@step("Click PRODIGY navigation link")
 	async clickProdigy() {
-		await this.navProdigyLink.click();
+		await Promise.all([
+			this.page.waitForURL("**/prodigy/**"),
+			this.navProdigyLink.click(),
+		]);
 	}
 }

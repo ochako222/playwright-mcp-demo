@@ -7,6 +7,6 @@ export class ProdigyPage extends AppPage {
 
 	@step("Verify Prodigy Page is loaded")
 	async expectLoaded() {
-		await expect.soft(this.pageHeading).toBeVisible({ timeout: 5000 });
+		await expect.soft(this.pageHeading).toBeVisible();
 	}
 }

@@ -2,8 +2,8 @@ import { devices, type PlaywrightTestConfig } from "@playwright/test";
 import dotenv from "dotenv";
 import path from "path";
 
-const SUITE_TIMEOUT = 10 * 1000;
-const EXPECT_TIMEOUT = 1000;
+const SUITE_TIMEOUT = 30 * 1000;
+const EXPECT_TIMEOUT = 5 * 1000;
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
@@ -15,7 +15,7 @@ const config: PlaywrightTestConfig = {
 	reporter: "html",
 	use: {
 		browserName: "chromium",
-		channel: "chrome",
+		channel: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? undefined : "chrome",
 		launchOptions: {
 			executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
 			headless: !!process.env.CI,

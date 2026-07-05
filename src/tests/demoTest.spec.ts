@@ -4,7 +4,6 @@ demoTest.describe("Demo test", { tag: ["@login", "@regression"] }, () => {
 	demoTest(
 		"Validate that Ciklum page opened successfully",
 		async ({ pages, globalEnv }) => {
-			demoTest.setTimeout(30000);
 			await pages.homePage.goto(globalEnv.BASE_URL);
 			await pages.homePage.acceptCookies();
 			await pages.homePage.expectLoaded();
