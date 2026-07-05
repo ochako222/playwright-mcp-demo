@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"src/*": ["./src/*"]
+		},
+
+		"module": "NodeNext",
+		"target": "ESNext",
+		"types": ["node"],
+		"lib": ["ESNext"],
+
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"skipLibCheck": true
+	},
+	"include": ["src/**/*", "configs/**/*"],
+	"exclude": ["src/misc/reporters/slowStepReporter.ts"]
+}
